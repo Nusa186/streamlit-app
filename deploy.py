@@ -15,7 +15,7 @@ train_datagen = ImageDataGenerator(rescale = 1./255.,
                                    shear_range = 0.2,
                                    zoom_range = 0.2,
                                    horizontal_flip = True)
-train_generator = train_datagen.flow_from_directory(r"C:\streamlit\Image_classify\train",
+train_generator = train_datagen.flow_from_directory(r"image\path",
                                                     batch_size = 30,
                                                     class_mode = 'categorical', 
                                                     target_size = (150, 150))
@@ -27,7 +27,7 @@ def index():
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     imgFile = request.files['imgFile'] #postman key
-    img_path = "./db/" + imgFile.filename
+    img_path = "./path/" + imgFile.filename
     imgFile.save(img_path) #save file to disk
 
     img = load_img(img_path, target_size=(150, 150))
