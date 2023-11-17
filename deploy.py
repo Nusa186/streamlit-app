@@ -26,25 +26,34 @@ def index():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    imgFile = request.files['imgFile'] #postman key
-    img_path = "./db/" + imgFile.filename
-    imgFile.save(img_path) #save file to disk
+    files = request.files.getlist('imgFile')  # Menggunakan getlist untuk mengambil daftar file
 
-    img = load_img(img_path, target_size=(150, 150))
+    predictions = []
 
-    x = img_to_array(img) / 255.
-    x = np.expand_dims(x, axis=0)
+    for imgFile in files:
+        img_path = "./db/" + imgFile.filename
+        imgFile.save(img_path)  # Simpan file ke disk
 
-    prediction = model.predict(x)
+        img = load_img(img_path, target_size=(150, 150))
 
-    top_class = np.argmax(prediction)
-    top_prob = prediction[0][top_class]
+        x = img_to_array(img) / 255.
+        x = np.expand_dims(x, axis=0)
 
-    class_names = train_generator.class_indices
-    class_names = dict((v,k) for k,v in class_names.items())
-    top_class_name = class_names[top_class]
+        prediction = model.predict(x)
 
-    # return render_template('index.html', predict_category=f'The model predicts that the image is of class {top_class_name}')
-    return jsonify({'status':'SUCCES', 'input':imgFile.filename, 'category':top_class_name, 'prediction':f'{top_prob*100:.2f}'}), 200 #json format
+        top_class = np.argmax(prediction)
+        top_prob = prediction[0][top_class]
+
+        class_names = train_generator.class_indices
+        class_names = dict((v, k) for k, v in class_names.items())
+        top_class_name = class_names[top_class]
+
+        predictions.append({
+            'input': imgFile.filename,
+            'category': top_class_name,
+            'prediction': f'{top_prob * 100:.2f}'
+        })
+
+    return jsonify({'status': 'SUCCESS', 'predictions': predictions}), 200  # Format JSON untuk respons
 if __name__ == '__main__':
     app.run(debug=True)
