@@ -8,17 +8,10 @@ import numpy as np
 
 app = Flask(__name__)
 model = tf.keras.models.load_model('image_classifier.h5')
-train_datagen = ImageDataGenerator(rescale = 1./255.,
-                                   rotation_range = 40,
-                                   width_shift_range = 0.2,
-                                   height_shift_range = 0.2,
-                                   shear_range = 0.2,
-                                   zoom_range = 0.2,
-                                   horizontal_flip = True)
-train_generator = train_datagen.flow_from_directory(r"C:\streamlit\Image_classify\train",
-                                                    batch_size = 30,
-                                                    class_mode = 'categorical', 
-                                                    target_size = (150, 150))
+
+class_indices = np.load('class_dataset.npy', allow_pickle=True).item()
+
+class_names = {v: k for k, v in class_indices.items()}
 
 @app.route('/')
 def index():
@@ -43,9 +36,7 @@ def predict():
 
         top_class = np.argmax(prediction)
         top_prob = prediction[0][top_class]
-
-        class_names = train_generator.class_indices
-        class_names = dict((v, k) for k, v in class_names.items())
+        
         top_class_name = class_names[top_class]
 
         predictions.append({
