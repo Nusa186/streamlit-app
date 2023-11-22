@@ -17,9 +17,38 @@ class_names = {v: k for k, v in class_indices.items()}
 def index():
     return 'Hello, world'
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/predict-single', methods=['GET', 'POST'])
+def predict_single():
+    imgFile = request.files.get('imgFile[]')
+
+    if imgFile:
+        img_path = "./db/" + imgFile.filename
+        imgFile.save(img_path)
+
+        img = load_img(img_path, target_size=(150, 150))
+        x = img_to_array(img) / 255.
+        x = np.expand_dims(x, axis=0)
+
+        prediction = model.predict(x)
+
+        top_class = np.argmax(prediction)
+        top_prob = prediction[0][top_class]
+
+        top_class_name = class_names[top_class]
+
+        result = {
+            'input': imgFile.filename,
+            'category': top_class_name,
+            'prediction': f'{top_prob * 100:.2f}'
+        }
+
+        return jsonify({'status': 'SUCCESS', 'result': result}), 200
+    else:
+        return jsonify({'status': 'ERROR', 'message': 'No file provided.'}), 400
+
+@app.route('/predict-multiple', methods=['GET', 'POST'])
 def predict():
-    files = request.files.getlist('imgFile')  # Menggunakan getlist untuk mengambil daftar file
+    files = request.files.getlist('imgFile[]')  # Menggunakan getlist untuk mengambil daftar file
 
     predictions = []
 
