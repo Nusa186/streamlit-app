@@ -74,6 +74,9 @@ def predict():
             'prediction': f'{top_prob * 100:.2f}'
         })
 
-    return jsonify({'status': 'SUCCESS', 'predictions': predictions}), 200  # Format JSON untuk respons
+    if imgFile:
+        return jsonify({'status': 'SUCCESS', 'predictions': predictions}), 200  # Format JSON untuk respons
+    else:
+        return jsonify({'status': 'ERROR', 'message': 'No file provided.'}), 400
 if __name__ == '__main__':
     app.run(debug=True)
