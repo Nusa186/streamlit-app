@@ -1,7 +1,6 @@
 Flask==3.0.0
 h5py==3.10.0
 keras==2.14.0
-ml-dtypes==0.2.0
 numpy==1.26.2
 Pillow==10.1.0
 tensorflow==2.14.0
