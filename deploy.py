@@ -9,7 +9,7 @@ import requests
 import numpy as np
 
 app = Flask(__name__)
-model = tf.keras.models.load_model('image_classifier.h5')
+model = tf.keras.models.load_model('klasifikasi_gambar.h5')
 
 app.config["ALLOWED_EXTENSIONS"] = set(['jpg', 'png', 'jpeg'])
 
@@ -17,7 +17,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
 
-class_indices = np.load('class_dataset.npy', allow_pickle=True).item()
+class_indices = np.load('class_indices.npy', allow_pickle=True).item()
 class_names = {v: k for k, v in class_indices.items()}
 
 @app.route('/predict-single-url', methods=['POST'])
