@@ -17,7 +17,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
 
-class_indices = np.load('class_indices.npy', allow_pickle=True).item()
+class_indices = np.load('class_dataset.npy', allow_pickle=True).item()
 class_names = {v: k for k, v in class_indices.items()}
 
 @app.route('/predict-single-url', methods=['POST'])
