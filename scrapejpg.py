@@ -36,7 +36,7 @@ async def scrape_images(query):
 
         await browser.close()
 
-        #batasi jumlah gambar maksimum menjadi 100
+        #batasi jumlah gambar maksimum menjadi yang di inginkan
         if len(image_links) > 300:
             image_links = image_links[:300]
 
