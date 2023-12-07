@@ -27,7 +27,8 @@ def menu():
     sbert_embed = np.load('sbert_embed.npy')
 
     import tensorflow_hub as hub
-    model = hub.Module("https://kaggle.com/models/google/universal-sentence-encoder/frameworks/TensorFlow1/variations/universal-sentence-encoder/versions/1")
+    model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
+    model = hub.load(model_url)
 
     def use_embedding(texts):
         return model(texts)
