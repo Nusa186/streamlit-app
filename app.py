@@ -6,13 +6,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 st.set_page_config(
-    page_title="Semantic Search Project",
+    page_title="Amazon Semantic Search",
     page_icon=":bookmark_tabs:",
     layout="wide",
     initial_sidebar_state="expanded", 
 )
 
-df = pd.read_csv('amazonFood.csv')
+@st.cache_data
+def load_data():
+    data = pd.read_csv('amazonFood.csv')
+    return data
+
+df = load_data()
 review_data = df[['ProductId', 'productName', 'Score', 'Summary','Text']]
 
 
@@ -95,7 +100,8 @@ def menu():
             number = st.number_input('Input total product', value=5)
             sbert_nn = NearestNeighbors(n_neighbors=number)
             sbert_nn.fit(sbert_embed)
-
+            
+            @st.cache_data
             def sbert_recommend(texts):
                 emb = sbert_embedding([texts])
                 neighbors = sbert_nn.kneighbors(emb, return_distance=False)[0]
@@ -135,6 +141,7 @@ def menu():
             use_nn = NearestNeighbors(n_neighbors=number)
             use_nn.fit(use_embed)
 
+            @st.cache_data
             def use_recommend(texts):
                 emb = use_embedding([texts])
                 neighbors = use_nn.kneighbors(emb, return_distance=False)[0]
@@ -175,6 +182,7 @@ def menu():
             st.write('**Search the product with the link below:**')
             st.write('https://www.amazon.com/dp/productId')
             st.write('Note: Change the ProductId in the link with product id you want to search')
+
         case 'Visualization':
             tab1,tab2 = st.tabs(['USE Model', 'SBERT Model'])
             
@@ -198,6 +206,7 @@ def menu():
                         "How old are you?",
                         "what is your age?",
                     ]
+
             def plot_similarity(labels, features, rotation):
                 corr = np.inner(features, features)
                 sns.set(font_scale=0.8)
@@ -214,6 +223,7 @@ def menu():
                 
             with tab1:
                 st.write('This is how embedding words process works to measure the semantic similarity in USE model. The density of color in matrix correlation indicates how similar the sentences are.')
+                @st.cache_data
                 def run_and_plot(messages_):
                     message_embeddings_ = use_embedding(messages_)
                     plot_similarity(messages_, message_embeddings_, 90)
@@ -234,6 +244,7 @@ def menu():
                 def correlation_matrix(embeddings):
                     correlation_matrix = util.cos_sim(embeddings, embeddings)
                     return correlation_matrix
+                
                 def vis_correlation_matrix(correlation_matrix, labels):
                     df = pd.DataFrame(correlation_matrix, columns=labels, index=labels)
                     fig, ax = plt.subplots()
@@ -253,6 +264,7 @@ def menu():
                     st.subheader('**Table of Data in Matrix Correlation**')
                     st.write('Data view of the correlation matrix:')
                     st.write(df)
+                    
                 message_embeddings_ = sbert_embedding(messages)
                 corr_matrix = correlation_matrix(message_embeddings_)
                 vis_correlation_matrix(corr_matrix, messages)
