@@ -1,9 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+
 
 st.set_page_config(
     page_title="Amazon Semantic Search",
@@ -22,14 +20,21 @@ review_data = df[['ProductId', 'productName', 'Score', 'Summary','Text']]
 
 
 def menu():
+    import numpy as np
+    import seaborn as sns
+    import matplotlib.pyplot as plt
     from sentence_transformers import SentenceTransformer, util
-
+    from sklearn.neighbors import NearestNeighbors
     sbert_model = SentenceTransformer('sbert')
 
     def sbert_embedding(texts):
         return sbert_model.encode(texts)
-    
-    sbert_embed = np.load('sbert_embed.npy')
+
+    @st.cache_data
+    def bert_model():
+        sbert_embed = np.load('sbert_embed.npy')
+        return sbert_embed   
+    sbert_embed = bert_model()
 
     import tensorflow_hub as hub
     model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
@@ -38,7 +43,11 @@ def menu():
     def use_embedding(texts):
         return model(texts)
     
-    use_embed = np.load('use_embed.npy')
+    @st.cache_data
+    def use_model():
+        use_embed = np.load('use_embed.npy')
+        return use_embed
+    use_embed = use_model()
 
     selected = option_menu(
         menu_title='Menu',  
@@ -98,13 +107,16 @@ def menu():
             from sklearn.neighbors import NearestNeighbors
             st.header("Semantic Search using SBERT model")
             number = st.number_input('Input total product', value=5)
-            sbert_nn = NearestNeighbors(n_neighbors=number)
-            sbert_nn.fit(sbert_embed)
-            
+            @st.cache_data
+            def train_sbert():
+                sbert_nn = NearestNeighbors(n_neighbors=number)
+                return sbert_nn.fit(sbert_embed)
+            sbert_train = train_sbert()
+
             @st.cache_data
             def sbert_recommend(texts):
                 emb = sbert_embedding([texts])
-                neighbors = sbert_nn.kneighbors(emb, return_distance=False)[0]
+                neighbors = sbert_train.kneighbors(emb, return_distance=False)[0]
                 return review_data['ProductId'].iloc[neighbors].tolist()
             
             
@@ -134,17 +146,20 @@ def menu():
                         st.write(review_data.loc[review_data['ProductId'] == input[i]])   
 
         case "USE":
-            from sklearn.neighbors import NearestNeighbors
+            
 
             st.header("Semantic Search using USE model")
             number = st.number_input('Input total product', value=5)
-            use_nn = NearestNeighbors(n_neighbors=number)
-            use_nn.fit(use_embed)
+            @st.cache_data
+            def train_use():
+                use_nn = NearestNeighbors(n_neighbors=number)
+                return use_nn.fit(use_embed)
+            use_train = train_use()
 
             @st.cache_data
             def use_recommend(texts):
                 emb = use_embedding([texts])
-                neighbors = use_nn.kneighbors(emb, return_distance=False)[0]
+                neighbors = use_train.kneighbors(emb, return_distance=False)[0]
                 return review_data['ProductId'].iloc[neighbors].tolist()
             
             with st.form("Search Product"):
@@ -176,7 +191,9 @@ def menu():
         case "Data":
             st.write('This dataset consists of product details from amazon. The details include product and user information (added productName), ratings, and a plain text review. It also includes reviews from all other Amazon categories.')
             st.write('Data Source: https://www.kaggle.com/datasets/aistct/amazonfood?select=amazonFood.csv')
-            st.write(df)
+            checkbox = st.checkbox('Show Data')
+            if checkbox:
+                st.write(df.head(1000))
             list_of_ProductId = df['ProductId'].unique()
             st.write(f'Amount of product\t: {len(list_of_ProductId)}')
             st.write('**Search the product with the link below:**')
@@ -241,6 +258,7 @@ def menu():
                 
             with tab2:
                 st.write('This is how embedding words process works to measure the semantic similarity in SBERT model. The density of color in matrix correlation indicates how similar the sentences are.')
+                @st.cache_data
                 def correlation_matrix(embeddings):
                     correlation_matrix = util.cos_sim(embeddings, embeddings)
                     return correlation_matrix
@@ -264,7 +282,7 @@ def menu():
                     st.subheader('**Table of Data in Matrix Correlation**')
                     st.write('Data view of the correlation matrix:')
                     st.write(df)
-                    
+
                 message_embeddings_ = sbert_embedding(messages)
                 corr_matrix = correlation_matrix(message_embeddings_)
                 vis_correlation_matrix(corr_matrix, messages)
