@@ -18,7 +18,6 @@ def load_data():
 df = load_data()
 review_data = df[['ProductId', 'productName', 'Score', 'Summary','Text']]
 
-@st.cache_data
 def menu():
     import numpy as np
     import seaborn as sns
