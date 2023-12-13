@@ -23,9 +23,15 @@ def menu():
     import seaborn as sns
     import matplotlib.pyplot as plt
     from sentence_transformers import SentenceTransformer, util
-    from sklearn.neighbors import NearestNeighbors
-    sbert_model = SentenceTransformer('sbert')
+    from sklearn.neighbors import NearestNeighbors  
+    import tensorflow_hub as hub
 
+    @st.cache_resource
+    def sbert():
+        return SentenceTransformer('sbert')
+    sbert_model = sbert()
+
+    @st.cache_resource
     def sbert_embedding(texts):
         return sbert_model.encode(texts)
 
@@ -35,10 +41,12 @@ def menu():
         return sbert_embed   
     sbert_embed = bert_model()
 
-    import tensorflow_hub as hub
-    model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
-    model = hub.load(model_url)
+    @st.cache_resource
+    def use():
+        return hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+    model = use()
 
+    @st.cache_resource
     def use_embedding(texts):
         return model(texts)
     
@@ -145,8 +153,6 @@ def menu():
                         st.write(review_data.loc[review_data['ProductId'] == input[i]])   
 
         case "USE":
-            
-
             st.header("Semantic Search using USE model")
             number = st.number_input('Input total product', value=5)
             @st.cache_data
@@ -222,7 +228,7 @@ def menu():
                         "How old are you?",
                         "what is your age?",
                     ]
-
+            
             def plot_similarity(labels, features, rotation):
                 corr = np.inner(features, features)
                 sns.set(font_scale=0.8)
@@ -239,7 +245,7 @@ def menu():
                 
             with tab1:
                 st.write('This is how embedding words process works to measure the semantic similarity in USE model. The density of color in matrix correlation indicates how similar the sentences are.')
-                @st.cache_data
+                @st.cache_resource
                 def run_and_plot(messages_):
                     message_embeddings_ = use_embedding(messages_)
                     plot_similarity(messages_, message_embeddings_, 90)
