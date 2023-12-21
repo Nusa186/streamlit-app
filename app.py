@@ -140,6 +140,7 @@ def menu():
                         st.subheader(f"Product {step}")
                         st.write(f"Product ID : {i}")
                         st.write(f"Product Name : {product_data['productName'].iloc[1]}")
+                        st.write(f"Product Link : https://www.amazon.com/dp/{i}")
                         step += 1
                     st.write('**------------------------------------------------------------------------------------**')    
                     st.subheader('**How to Search the product**')
@@ -180,6 +181,7 @@ def menu():
                         st.subheader(f"Product {step}")
                         st.write(f"Product ID : {i}")
                         st.write(f"Product Name : {product_data['productName'].iloc[1]}")
+                        st.write(f"Product Link : https://www.amazon.com/dp/{i}")
                         step += 1
 
                     st.write('**------------------------------------------------------------------------------------**')    
